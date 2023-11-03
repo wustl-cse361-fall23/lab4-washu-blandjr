@@ -8,40 +8,47 @@
 
 #define addrSize 64;  //8 byte address 
 
-// Global variables
+//Global variables
 int hits;
 int misses;
 int evictions;
 int dirty_evicted;
 int dirty_active;
 int double_accesses;
-int s;      //set bits
-int S;      //set amount
-int E;      //associativity
-int B;      //block size
-int b;      //block offset bits
 
+//Useful structs to access parts of cache and its characteristics
+
+struct Values { 
+    int s;      //set bits
+    int S;      //set amount
+    int E;      //associativity
+    int B;      //block size
+    int b;      //block offset bits
+};
 
 struct Trace {
     long address;
-    //…
 };
 
-struct Line { //provide information for each line
+struct Line { 
     long tag;
     bool valid;
     bool dirty;
+    bool lru;
 };
 
 struct Set {
-    struct Line *lines; //array of lines
+    struct Line *lines;
 };
 
 struct Cache {
-    struct Set *sets; //array of sets
+    struct Set *sets; 
 };
 
-//TODO: make function to allocate memory for cache
+
+//Helper Functions
+
+//makeCache allocates memory for cache (for use in initializing cache)
 struct Cache makeCache(int S, int E, int B){
     struct Cache newCache;
     struct Set newSet;
@@ -80,21 +87,69 @@ void freeCache(struct Cache thisCache, int S, int E, int B){
     }    
 }
 
+//setNotFull checks if a valid bit in set has not been set to true
+bool setNotFull(struct Set thisSet){
+    struct Values V;
+    for (int i=0; i<V.E; i++){
+        if(!set.lines[i].valid){
+            return true;
+        }
+    }
+    return false; //all valid bits set to true, so it's full
+}
+
+//emptyLineIndex checks for empty lines in a specifc set in the case of a cold miss
+int emptyLineIndex(struct Set thisSet){
+    struct Values V;
+    struct Line thisLine;
+
+    for (int i = 0; i < V.E; i++){
+        if(!thisSet.lines[i].valid){
+            return i;
+        }
+    }
+    return 0;
+}
+
+int LRUindex(struct Set thisSet){
+
+}
+
+int LRUindex(struct Set thisSet){
+    
+}
+
+//Cache Operations
 //TODO: make function for load and store
-int load(struct Cache thisCache, unsigned long address){
-    return 0;
+void load(struct Cache thisCache, long address){
+    struct Values V;
+    int t = addrSize - V.s - V.b;
+    long addressTag = address >> (V.s + V.b);
+    long setVal = (address << (t)) >> (t + V.b); 
+    struct Set thisSet = thisCache.sets[setVal]; 
+
+    for (int i = 0; i < V.E; i++) {
+        struct Line thisLine = thisSet.lines[i]; 
+        if ((thisLine.tag == address) && (thisLine.valid)) { // Hit
+            hits++;
+        }
+    }
+
 }
 
-int store(struct Cache thisCache, unsigned long address){
-    return 0;
-}
+void store(struct Cache thisCache, long address){
 
-int main(int argc, char * argv[]){
-    S = pow(2.0, s); //calc S = 2^s
-    B = pow(2.0, b); //calc B = 2^b
+
+}
+///
+int main(int argc, char * argv[]){  
+    struct Values V;
+    
+    V.S = pow(2.0, V.s); //calc S = 2^s
+    V.B = pow(2.0, V.b); //calc B = 2^b
     
     // iniitializes the cache
-    struct Cache simCache = makeCache(S, E, B);
+    struct Cache simCache = makeCache(V.S, V.E, V.B);
     
     //gets params s,E,b,t,v, and h from cmd line argument
     char opt; // hold current arg from cmd
@@ -104,13 +159,13 @@ int main(int argc, char * argv[]){
     while ((opt = getopt(argc, argv, "s:E:b:t:vh")) != -1) {
         switch (opt) {
             case 's':
-                s = strtoul(optarg, (char **) trace, 10); //gets s value
+                V.s = strtoul(optarg, (char **) trace, 10); //gets s value
                 break;
             case 'E':
-                E = strtoul(optarg, (char **) trace, 10); //gets E value
+                V.E = strtoul(optarg, (char **) trace, 10); //gets E value
                 break;
             case 'b':
-                b = strtoul(optarg, (char **) trace, 10); //gets b value
+                V.b = strtoul(optarg, (char **) trace, 10); //gets b value
                 break;
             case 't':
                 trace = optarg; //puts filename in current arg
@@ -130,16 +185,16 @@ int main(int argc, char * argv[]){
         case 'I': //ignore I
             break;
         case 'L':
-            //load(simCache, addr);
+            //load(simCache, Values, addr);
             break;
         
         case 'S':
-            //store(simCache, addr);
+            //store(simCache, Values, addr);
             break;
 
         case 'M':
-            //load(simCache, addr);
-            //store(simCache, addr);
+            //load(simCache, Values, addr);
+            //store(simCache, Values, addr);
             break;
         }
     }
@@ -147,7 +202,7 @@ int main(int argc, char * argv[]){
     printSummary(hits, misses, evictions, dirty_evicted, dirty_active, double_accesses);
     
     // to prevent memory leak, free up the space held up cache
-    freeCache(simCache, S, E, B);
+    freeCache(simCache, V.S, V.E, V.B);
     fclose(f);
 
     return 0;
