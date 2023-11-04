@@ -170,7 +170,6 @@ void load(struct Cache thisCache, unsigned int address, struct Values V){
         thisSet.lines[emptyLine].dirty = false;
         thisSet.lines[emptyLine].valid = true;
         thisCache.sets[setVal].lines[emptyLine].use = thisCache.sets[setVal].lines[thisMRU].use + 1;
-
     }
 
     else if (!hit) {//conflict miss
@@ -213,7 +212,6 @@ void store(struct Cache thisCache, unsigned int address, struct Values V){
             break;
         }
     }
-
         
         if (!hit && setNotFull(thisSet, V)) { //cold miss
             misses++;
@@ -224,10 +222,8 @@ void store(struct Cache thisCache, unsigned int address, struct Values V){
             thisSet.lines[emptyLine].dirty = true;
             thisSet.lines[emptyLine].valid = true;
             thisCache.sets[setVal].lines[emptyLine].use = thisCache.sets[setVal].lines[thisMRU].use + 1;
-
         }
 
-       
         else if (!hit) { //conflict miss
             misses++;
             evictions++;
@@ -276,7 +272,6 @@ int main(int argc, char * argv[]){
     
     // iniitializes the cache
     simCache = makeCache(V);
-    
     
      //reading from trace file
     FILE * f = fopen(trace, "r");
