@@ -253,13 +253,13 @@ int main(int argc, char * argv[]){
                 exit(0);
                 break;
             case 's':
-                V.s = strtoul(optarg, (char **) trace, 10); //gets s value
+                V.s = strtoul(optarg, &trace, 10); //gets s value
                 break;
             case 'E':
-                V.E = strtoul(optarg, (char **) trace, 10); //gets E value
+                V.E = strtoul(optarg, &trace, 10); //gets E value
                 break;
             case 'b':
-                V.b = strtoul(optarg, (char **) trace, 10); //gets b value
+                V.b = strtoul(optarg, &trace, 10); //gets b value
                 break;
             case 't':
                 trace = optarg; //puts filename in current arg
