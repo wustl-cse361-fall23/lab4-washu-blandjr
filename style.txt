@@ -1,0 +1,7 @@
+Grader: Jack Heuberger
+
+7 lines over 80 chars: -2
+
+Did not check malloc for failure: -1
+
+7/10
